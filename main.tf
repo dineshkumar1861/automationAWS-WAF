@@ -187,16 +187,15 @@ resource "aws_wafv2_rule_group" "sql-injection-rule" {
   capacity    = 100
   scope       = "REGIONAL"
   description = "Rule group for SQL injection protection"
+  visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "SqlInjectionRuleMetrics"
+      sampled_requests_enabled   = true
+  }
 
   rule {
     name     = "block-sqli"
     priority = 1
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "SqlInjectionRuleMetrics"
-      sampled_requests_enabled   = true
-    }
 
     statement {
       sqli_match_statement {
@@ -224,16 +223,15 @@ resource "aws_wafv2_rule_group" "xss-rule" {
   capacity    = 100
   scope       = "REGIONAL"
   description = "Rule group for XSS protection"
+  visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "XssRuleMetrics"
+      sampled_requests_enabled   = true
+  }
 
   rule {
     name     = "block-xss"
     priority = 1
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "XssRuleMetrics"
-      sampled_requests_enabled   = true
-    }
 
     statement {
       xss_match_statement {
