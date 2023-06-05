@@ -218,19 +218,11 @@ resource "aws_wafv2_rule_group" "xss-rule" {
 ############ Attaching Rules to AWS WAF ############
 
 resource "aws_wafv2_web_acl_association" "sql-injection-association" {
-  web_acl_arn          = aws_wafv2_web_acl.web-acl.arn
-  resource_arn         = aws_lb.application-lb.arn
-  web_acl_association = {
-    resource_type = "APPLICATION_LOAD_BALANCER"
-    resource_arn  = aws_lb.application-lb.arn
-  }
+  web_acl_arn  = aws_wafv2_web_acl.web-acl.arn
+  resource_arn = aws_lb.application-lb.arn
 }
 
 resource "aws_wafv2_web_acl_association" "xss-association" {
-  web_acl_arn          = aws_wafv2_web_acl.web-acl.arn
-  resource_arn         = aws_lb.application-lb.arn
-  web_acl_association = {
-    resource_type = "APPLICATION_LOAD_BALANCER"
-    resource_arn  = aws_lb.application-lb.arn
-  }
+  web_acl_arn  = aws_wafv2_web_acl.web-acl.arn
+  resource_arn = aws_lb.application-lb.arn
 }
