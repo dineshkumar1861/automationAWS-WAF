@@ -149,6 +149,11 @@ resource "aws_wafv2_web_acl" "web-acl" {
             name = "referer"
           }
         }
+
+        text_transformation {
+          priority = 1
+          type     = "NONE"
+        }
       }
     }
 
@@ -177,6 +182,11 @@ resource "aws_wafv2_web_acl" "web-acl" {
           single_header {
             name = "user-agent"
           }
+        }
+
+        text_transformation {
+          priority = 1
+          type     = "NONE"
         }
       }
     }
