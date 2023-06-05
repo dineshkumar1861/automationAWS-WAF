@@ -126,6 +126,14 @@ resource "aws_wafv2_web_acl" "web-acl" {
   name        = "rga-web-acl"
   description = "Web ACL to block web attacks"
 
+  scope = "REGIONAL"  # Specify the desired scope, such as "REGIONAL" or "CLOUDFRONT"
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true  # Set to true if you want to enable CloudWatch metrics for the web ACL
+    metric_name                = "WebAclMetrics"  # The name of the CloudWatch metric
+    sampled_requests_enabled   = true  # Set to true if you want to enable sampling of requests for the web ACL
+  }
+
   default_action {
     block {}
   }
