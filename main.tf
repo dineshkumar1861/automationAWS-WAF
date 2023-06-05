@@ -137,6 +137,15 @@ resource "aws_wafv2_web_acl" "web-acl" {
   default_action {
     block {}
   }
+}
+
+############ Defining Rules for AWS WAF ############
+
+resource "aws_wafv2_rule_group" "sql-injection-rule" {
+  name        = "sql-injection-rule"
+  capacity    = 100
+  scope       = "REGIONAL"
+  description = "Rule group for SQL injection protection"
 
   rule {
     name     = "block-sqli"
@@ -160,21 +169,18 @@ resource "aws_wafv2_web_acl" "web-acl" {
     action {
       block {}
     }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "WebAclMetrics"
-      sampled_requests_enabled   = true
-    }
-
-    override_action {
-      none {}
-    }
   }
+}
+
+resource "aws_wafv2_rule_group" "xss-rule" {
+  name        = "xss-rule"
+  capacity    = 100
+  scope       = "REGIONAL"
+  description = "Rule group for XSS protection"
 
   rule {
     name     = "block-xss"
-    priority = 2
+    priority = 1
 
     statement {
       xss_match_statement {
@@ -194,17 +200,30 @@ resource "aws_wafv2_web_acl" "web-acl" {
     action {
       block {}
     }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "WebAclMetrics"
-      sampled_requests_enabled   = true
-    }
-
-    override_action {
-      none {}
-    }
   }
+}
+
+############ Attaching Rules to AWS WAF ############
+
+resource "aws_wafv2_web_acl_association" "web-acl-association" {
+  resource_arn = aws_lb.application-lb.arn
+  web_acl_arn  = aws_wafv2_web_acl.web-acl.arn
+}
+
+resource "aws_wafv2_web_acl_rule_group_association" "sql-injection-association" {
+  web_acl_arn       = aws_wafv2_web_acl.web-acl.arn
+  rule_group_arn    = aws_wafv2_rule_group.sql-injection-rule.arn
+  priority          = 1
+  action            = "BLOCK"
+  override_action   = "NONE"
+}
+
+resource "aws_wafv2_web_acl_rule_group_association" "xss-association" {
+  web_acl_arn       = aws_wafv2_web_acl.web-acl.arn
+  rule_group_arn    = aws_wafv2_rule_group.xss-rule.arn
+  priority          = 2
+  action            = "BLOCK"
+  override_action   = "NONE"
 }
 
 ############ Attaching AWS WAF to ALB ############
