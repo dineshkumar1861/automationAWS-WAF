@@ -155,6 +155,16 @@ resource "aws_wafv2_web_acl" "web-acl" {
     action {
       block {}
     }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "WebAclMetrics"
+      sampled_requests_enabled   = true
+    }
+
+    override_action {
+      none {}
+    }
   }
 
   rule {
@@ -173,6 +183,16 @@ resource "aws_wafv2_web_acl" "web-acl" {
 
     action {
       block {}
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "WebAclMetrics"
+      sampled_requests_enabled   = true
+    }
+
+    override_action {
+      none {}
     }
   }
 }
