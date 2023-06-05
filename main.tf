@@ -151,6 +151,12 @@ resource "aws_wafv2_rule_group" "sql-injection-rule" {
     name     = "block-sqli"
     priority = 1
 
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "SqlInjectionRuleMetrics"
+      sampled_requests_enabled   = true
+    }
+
     statement {
       sqli_match_statement {
         field_to_match {
@@ -170,12 +176,6 @@ resource "aws_wafv2_rule_group" "sql-injection-rule" {
       block {}
     }
   }
-
-  visibility_config {
-    cloudwatch_metrics_enabled = true
-    metric_name                = "SqlInjectionRuleMetrics"
-    sampled_requests_enabled   = true
-  }
 }
 
 resource "aws_wafv2_rule_group" "xss-rule" {
@@ -187,6 +187,12 @@ resource "aws_wafv2_rule_group" "xss-rule" {
   rule {
     name     = "block-xss"
     priority = 1
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "XssRuleMetrics"
+      sampled_requests_enabled   = true
+    }
 
     statement {
       xss_match_statement {
@@ -206,12 +212,6 @@ resource "aws_wafv2_rule_group" "xss-rule" {
     action {
       block {}
     }
-  }
-
-  visibility_config {
-    cloudwatch_metrics_enabled = true
-    metric_name                = "XssRuleMetrics"
-    sampled_requests_enabled   = true
   }
 }
 
