@@ -30,7 +30,7 @@ resource "aws_instance" "web-server" {
   instance_type    = "t2.micro"
   count            = 2
   key_name         = "rga2"
-  security_groups  = ["${aws_security_group.web-server.name}"]
+  security_groups  = [aws_security_group.web-server.name]
   user_data        = <<-EOF
     #!/bin/bash
     sudo su
@@ -39,7 +39,7 @@ resource "aws_instance" "web-server" {
     systemctl start httpd
     systemctl enable httpd
     echo "<html><h1> Welcome to Dinesh Kumar Page.This is a AWS WAF Simulation $(hostname -f)...</p> </h1></html>" >> /var/www/html/index.html
-    EOF
+  EOF
 
   tags = {
     Name = "instance-${count.index}"
@@ -65,6 +65,12 @@ data "aws_subnet" "subnet2" {
 #################### Creating Target Group ####################
 
 resource "aws_lb_target_group" "target-group" {
+  name        = "rga-tg"
+  port        = 80
+  protocol    = "HTTP"
+  target_type = "instance"
+  vpc_id      = data.aws_vpc.default.id
+
   health_check {
     interval            = 10
     path                = "/"
@@ -73,12 +79,6 @@ resource "aws_lb_target_group" "target-group" {
     healthy_threshold   = 5
     unhealthy_threshold = 2
   }
-
-  name        = "rga-tg"
-  port        = 80
-  protocol    = "HTTP"
-  target_type = "instance"
-  vpc_id      = data.aws_vpc.default.id
 }
 
 ############# Creating Application Load Balancer #############
@@ -125,8 +125,7 @@ resource "aws_lb_target_group_attachment" "ec2_attach" {
 resource "aws_wafv2_web_acl" "web-acl" {
   name        = "rga-web-acl"
   description = "Web ACL to block web attacks"
-
-  scope = "REGIONAL"  # Specify the desired scope, such as "REGIONAL" or "CLOUDFRONT"
+  scope       = "REGIONAL"  # Specify the desired scope, such as "REGIONAL" or "CLOUDFRONT"
 
   visibility_config {
     cloudwatch_metrics_enabled = true  # Set to true if you want to enable CloudWatch metrics for the web ACL
@@ -146,6 +145,12 @@ resource "aws_wafv2_rule_group" "sql-injection-rule" {
   capacity    = 100
   scope       = "REGIONAL"
   description = "Rule group for SQL injection protection"
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "SqlInjectionMetrics"
+    sampled_requests_enabled   = true
+  }
 
   rule {
     name     = "block-sqli"
@@ -177,6 +182,12 @@ resource "aws_wafv2_rule_group" "xss-rule" {
   capacity    = 100
   scope       = "REGIONAL"
   description = "Rule group for XSS protection"
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "XssProtectionMetrics"
+    sampled_requests_enabled   = true
+  }
 
   rule {
     name     = "block-xss"
