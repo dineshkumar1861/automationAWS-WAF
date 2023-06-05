@@ -162,6 +162,11 @@ resource "aws_wafv2_rule_group" "sql-injection-rule" {
             name = "referer"
           }
         }
+
+        text_transformation {
+          priority = 1
+          type     = "NONE"
+        }
       }
     }
 
@@ -193,6 +198,11 @@ resource "aws_wafv2_rule_group" "xss-rule" {
           single_header {
             name = "user-agent"
           }
+        }
+
+        text_transformation {
+          priority = 1
+          type     = "NONE"
         }
       }
     }
