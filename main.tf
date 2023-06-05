@@ -151,10 +151,6 @@ resource "aws_wafv2_rule_group" "sql-injection-rule" {
     name     = "block-sqli"
     priority = 1
 
-    action {
-      block {}
-    }
-
     statement {
       sqli_match_statement {
         field_to_match {
@@ -170,11 +166,15 @@ resource "aws_wafv2_rule_group" "sql-injection-rule" {
       }
     }
 
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "SqlInjectionRuleMetrics"
-      sampled_requests_enabled   = true
+    action {
+      block {}
     }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "SqlInjectionRuleMetrics"
+    sampled_requests_enabled   = true
   }
 }
 
@@ -187,10 +187,6 @@ resource "aws_wafv2_rule_group" "xss-rule" {
   rule {
     name     = "block-xss"
     priority = 1
-
-    action {
-      block {}
-    }
 
     statement {
       xss_match_statement {
@@ -207,33 +203,34 @@ resource "aws_wafv2_rule_group" "xss-rule" {
       }
     }
 
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "XssRuleMetrics"
-      sampled_requests_enabled   = true
+    action {
+      block {}
     }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "XssRuleMetrics"
+    sampled_requests_enabled   = true
   }
 }
 
 ############ Attaching Rules to AWS WAF ############
 
-resource "aws_wafv2_web_acl_association" "web-acl-association" {
-  resource_arn = aws_lb.application-lb.arn
-  web_acl_arn  = aws_wafv2_web_acl.web-acl.arn
+resource "aws_wafv2_web_acl_association" "sql-injection-association" {
+  web_acl_arn          = aws_wafv2_web_acl.web-acl.arn
+  resource_arn         = aws_lb.application-lb.arn
+  web_acl_association = {
+    resource_type = "APPLICATION_LOAD_BALANCER"
+    resource_arn  = aws_lb.application-lb.arn
+  }
 }
 
-resource "aws_wafv2_web_acl_rule_group_association" "sql-injection-association" {
-  web_acl_arn       = aws_wafv2_web_acl.web-acl.arn
-  rule_group_arn    = aws_wafv2_rule_group.sql-injection-rule.arn
-  priority          = 1
-  action            = "BLOCK"
-  override_action   = "NONE"
-}
-
-resource "aws_wafv2_web_acl_rule_group_association" "xss-association" {
-  web_acl_arn       = aws_wafv2_web_acl.web-acl.arn
-  rule_group_arn    = aws_wafv2_rule_group.xss-rule.arn
-  priority          = 2
-  action            = "BLOCK"
-  override_action   = "NONE"
+resource "aws_wafv2_web_acl_association" "xss-association" {
+  web_acl_arn          = aws_wafv2_web_acl.web-acl.arn
+  resource_arn         = aws_lb.application-lb.arn
+  web_acl_association = {
+    resource_type = "APPLICATION_LOAD_BALANCER"
+    resource_arn  = aws_lb.application-lb.arn
+  }
 }
