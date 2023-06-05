@@ -125,17 +125,58 @@ resource "aws_lb_target_group_attachment" "ec2_attach" {
 resource "aws_wafv2_web_acl" "web-acl" {
   name        = "rga-web-acl"
   description = "Web ACL to block web attacks"
-
-  scope = "REGIONAL"  # Specify the desired scope, such as "REGIONAL" or "CLOUDFRONT"
-
-  visibility_config {
-    cloudwatch_metrics_enabled = true  # Set to true if you want to enable CloudWatch metrics for the web ACL
-    metric_name                = "WebAclMetrics"  # The name of the CloudWatch metric
-    sampled_requests_enabled   = true  # Set to true if you want to enable sampling of requests for the web ACL
-  }
+  scope       = "REGIONAL"
 
   default_action {
-    block {}
+    allow {}
+  }
+
+  rule {
+    name     = "sql-injection-rule"
+    priority = 0
+
+    override_action {
+      count {}
+    }
+
+    statement {
+      rule_group_reference_statement {
+        arn = aws_wafv2_rule_group.sql-injection-rule.arn
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "sqlinjectionrule"
+      sampled_requests_enabled   = false
+    }
+  }
+
+  rule {
+    name     = "xss-rule"
+    priority = 1
+
+    override_action {
+      count {}
+    }
+
+    statement {
+      rule_group_reference_statement {
+        arn = aws_wafv2_rule_group.xss-rule.arn
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "xssrule"
+      sampled_requests_enabled   = false
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "webACL"
+    sampled_requests_enabled   = false
   }
 }
 
@@ -217,12 +258,7 @@ resource "aws_wafv2_rule_group" "xss-rule" {
 
 ############ Attaching Rules to AWS WAF ############
 
-resource "aws_wafv2_web_acl_association" "sql-injection-association" {
-  web_acl_arn  = aws_wafv2_web_acl.web-acl.arn
+resource "aws_wafv2_web_acl_association" "web-acl-association" {
   resource_arn = aws_lb.application-lb.arn
-}
-
-resource "aws_wafv2_web_acl_association" "xss-association" {
   web_acl_arn  = aws_wafv2_web_acl.web-acl.arn
-  resource_arn = aws_lb.application-lb.arn
 }
