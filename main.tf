@@ -225,10 +225,3 @@ resource "aws_wafv2_web_acl_rule_group_association" "xss-association" {
   action            = "BLOCK"
   override_action   = "NONE"
 }
-
-############ Attaching AWS WAF to ALB ############
-
-resource "aws_wafv2_web_acl_association" "web-acl-association" {
-  resource_arn = aws_lb.application-lb.arn
-  web_acl_arn  = aws_wafv2_web_acl.web-acl.arn
-}
